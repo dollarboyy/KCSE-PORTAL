@@ -297,10 +297,15 @@ function ResultsPage({showToast}){
 
 function ResultSlip({student,res,langUsed,totalPts,totalGrade,top5,allIds}){
   const langLabel=SM[langUsed]?.label;
-  const otherRows=top5.filter(id=>id!=="math").map(id=>({id,label:SM[id]?.label,grade:res[id]?.grade,pts:res[id]?.points||0})).sort((a,b)=>b.pts-a.pts);
-  const notCounted=allIds.filter(id=>id!=="math"&&id!==langUsed&&!top5.includes(id));
+  // 7 subjects for display: Math + language used + best 5 others (sorted by points desc)
+  const otherRows=top5
+    .filter(id=>id!=="math")
+    .map(id=>({id,label:SM[id]?.label,grade:res[id]?.grade,pts:res[id]?.points||0}))
+    .sort((a,b)=>b.pts-a.pts);
+
   return(
     <div style={{background:"rgba(255,255,255,0.98)",borderRadius:16,padding:32,boxShadow:"0 10px 50px #0008",animation:"fadeIn .4s ease"}}>
+      {/* Header */}
       <div style={{borderBottom:"3px double #c8102e",paddingBottom:18,marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
         <div>
           <div style={{fontSize:10,letterSpacing:2,color:"#c8102e",fontWeight:700,textTransform:"uppercase"}}>Kenya National Examinations Council</div>
@@ -310,43 +315,40 @@ function ResultSlip({student,res,langUsed,totalPts,totalGrade,top5,allIds}){
         </div>
         <div style={{textAlign:"right"}}>
           <div style={{fontSize:10,color:"#94a3b8",marginBottom:4,letterSpacing:1,textTransform:"uppercase"}}>Overall Grade</div>
-          <div style={{fontSize:56,fontWeight:900,color:gColor(totalGrade),lineHeight:1}}>{totalGrade}</div>
-          <div style={{fontSize:13,color:"#64748b",fontWeight:600,marginTop:2}}>{totalPts}/84 pts</div>
+          <div style={{fontSize:56,fontWeight:900,color:"#15803d",lineHeight:1}}>{totalGrade}</div>
         </div>
       </div>
+
+      {/* Subject table — Subject + Grade only, all grades green */}
       <table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
         <thead><tr style={{background:"#0a2a4a"}}>
           <th style={{padding:"10px 14px",textAlign:"left",color:"#fff",fontWeight:700}}>Subject</th>
           <th style={{padding:"10px 14px",textAlign:"center",color:"#fff",fontWeight:700}}>Grade</th>
-          <th style={{padding:"10px 14px",textAlign:"center",color:"#fff",fontWeight:700}}>Points</th>
         </tr></thead>
         <tbody>
-          <SRow label="Mathematics" grade={res["math"]?.grade} pts={res["math"]?.points} alt={false}/>
-          <SRow label={<>{langLabel}<span style={{fontSize:11,color:"#b45309",marginLeft:6}}>(used for total)</span></>} grade={res[langUsed]?.grade} pts={res[langUsed]?.points} alt highlight/>
-          {otherRows.map((r,i)=><SRow key={r.id} label={r.label} grade={r.grade} pts={r.pts} alt={i%2===0}/>)}
+          {/* 1. Mathematics */}
+          <SRow label="Mathematics" grade={res["math"]?.grade} alt={false}/>
+          {/* 2. Language used (English or Kiswahili, whichever scored higher) */}
+          <SRow label={langLabel} grade={res[langUsed]?.grade} alt/>
+          {/* 3–7. Best 5 remaining subjects in descending grade order */}
+          {otherRows.map((r,i)=><SRow key={r.id} label={r.label} grade={r.grade} alt={i%2===0}/>)}
         </tbody>
       </table>
-      {notCounted.length>0&&(
-        <div style={{marginTop:16,paddingTop:14,borderTop:"1px dashed #e2e8f0"}}>
-          <div style={{fontSize:11,color:"#94a3b8",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:8}}>Not counted in total</div>
-          {notCounted.map(id=>(
-            <div key={id} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13,color:"#94a3b8"}}>
-              <span>{SM[id]?.label}</span><span style={{fontWeight:700}}>{res[id]?.grade||"-"}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={{marginTop:18,padding:"10px 14px",background:"#f8fafc",borderRadius:8,fontSize:11,color:"#94a3b8",textAlign:"center"}}>Official results issued by KNEC. This is a portal preview.</div>
+
+      <div style={{marginTop:20,padding:"10px 14px",background:"#f8fafc",borderRadius:8,fontSize:11,color:"#94a3b8",textAlign:"center"}}>
+        Official results issued by KNEC.
+      </div>
     </div>
   );
 }
 
-function SRow({label,grade,pts,alt,highlight}){
+function SRow({label,grade,alt}){
   return(
-    <tr style={{background:highlight?"#fffbeb":alt?"#f8fafc":"#fff",borderBottom:"1px solid #f1f5f9"}}>
-      <td style={{padding:"11px 14px",fontWeight:600,color:"#1e293b"}}>{label}</td>
-      <td style={{padding:"11px 14px",textAlign:"center"}}><span style={{fontSize:17,fontWeight:900,color:gColor(grade||"E")}}>{grade||"-"}</span></td>
-      <td style={{padding:"11px 14px",textAlign:"center",color:"#64748b",fontWeight:700}}>{pts||0}</td>
+    <tr style={{background:alt?"#f8fafc":"#fff",borderBottom:"1px solid #f1f5f9"}}>
+      <td style={{padding:"12px 14px",fontWeight:600,color:"#1e293b"}}>{label}</td>
+      <td style={{padding:"12px 14px",textAlign:"center"}}>
+        <span style={{fontSize:17,fontWeight:900,color:"#15803d"}}>{grade||"-"}</span>
+      </td>
     </tr>
   );
 }
