@@ -107,9 +107,9 @@ function computeResults(student, gb, tb, fm) {
   const eP = res["eng"]?.points||0, sP = res["swa"]?.points||0;
   const langUsed = eP>=sP?"eng":"swa";
   const nonLang = allIds.filter(id=>id!=="eng"&&id!=="swa");
-  const top5 = [...nonLang].sort((a,b)=>(res[b]?.points||0)-(res[a]?.points||0)).slice(0,5);
-  const totalPts = (res[langUsed]?.points||0)+top5.reduce((s,id)=>s+(res[id]?.points||0),0);
-  return { res, langUsed, totalPts, totalGrade: getGrade(totalPts,TB), top5, allIds };
+  const top6 = [...nonLang].sort((a,b)=>(res[b]?.points||0)-(res[a]?.points||0)).slice(0,6);
+  const totalPts = (res[langUsed]?.points||0)+top6.reduce((s,id)=>s+(res[id]?.points||0),0);
+  return { res, langUsed, totalPts, totalGrade: getGrade(totalPts,TB), top5: top6, allIds };
 }
 const gColor = g => ["A","A-"].includes(g)?"#15803d":["B+","B","B-"].includes(g)?"#1e40af":["C+","C","C-"].includes(g)?"#b45309":"#b91c1c";
 
@@ -297,11 +297,16 @@ function ResultsPage({showToast}){
 
 function ResultSlip({student,res,langUsed,totalPts,totalGrade,top5,allIds}){
   const langLabel=SM[langUsed]?.label;
-  // 7 subjects for display: Math + language used + best 5 others (sorted by points desc)
-  const otherRows=top5
-    .filter(id=>id!=="math")
+
+  // The other language (not used in total calculation)
+  const langNotUsed=langUsed==="eng"?"swa":"eng";
+
+  // All subjects except math and the language used for total
+  // This includes: the other language + all optional subjects taken
+  const remaining=allIds
+    .filter(id=>id!=="math"&&id!==langUsed)
     .map(id=>({id,label:SM[id]?.label,grade:res[id]?.grade,pts:res[id]?.points||0}))
-    .sort((a,b)=>b.pts-a.pts);
+    .sort((a,b)=>b.pts-a.pts); // descending by points
 
   return(
     <div style={{background:"rgba(255,255,255,0.98)",borderRadius:16,padding:32,boxShadow:"0 10px 50px #0008",animation:"fadeIn .4s ease"}}>
@@ -319,19 +324,19 @@ function ResultSlip({student,res,langUsed,totalPts,totalGrade,top5,allIds}){
         </div>
       </div>
 
-      {/* Subject table — Subject + Grade only, all grades green */}
+      {/* Subject table — all 8 subjects, Subject + Grade only, all grades green */}
       <table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
         <thead><tr style={{background:"#0a2a4a"}}>
           <th style={{padding:"10px 14px",textAlign:"left",color:"#fff",fontWeight:700}}>Subject</th>
           <th style={{padding:"10px 14px",textAlign:"center",color:"#fff",fontWeight:700}}>Grade</th>
         </tr></thead>
         <tbody>
-          {/* 1. Mathematics */}
+          {/* Row 1: Mathematics — always first */}
           <SRow label="Mathematics" grade={res["math"]?.grade} alt={false}/>
-          {/* 2. Language used (English or Kiswahili, whichever scored higher) */}
+          {/* Row 2: Language used for total calculation — always second */}
           <SRow label={langLabel} grade={res[langUsed]?.grade} alt/>
-          {/* 3–7. Best 5 remaining subjects in descending grade order */}
-          {otherRows.map((r,i)=><SRow key={r.id} label={r.label} grade={r.grade} alt={i%2===0}/>)}
+          {/* Rows 3–8: All remaining 6 subjects in descending grade order */}
+          {remaining.map((r,i)=><SRow key={r.id} label={r.label} grade={r.grade} alt={i%2===0}/>)}
         </tbody>
       </table>
 
