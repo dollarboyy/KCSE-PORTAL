@@ -114,16 +114,14 @@ function computeResults(student, gb, tb, fm) {
 const gColor = g => ["A","A-"].includes(g)?"#15803d":["B+","B","B-"].includes(g)?"#1e40af":["C+","C","C-"].includes(g)?"#b45309":"#b91c1c";
 
 // ─── UI Bits ──────────────────────────────────────────────────────────────────
-const KenyaFlag = ({ size=32 }) => (
-  <svg width={size} height={Math.round(size*0.67)} viewBox="0 0 90 60" style={{borderRadius:3,boxShadow:"0 1px 4px #0004",flexShrink:0}}>
-    <rect width="90" height="60" fill="#006600"/>
-    <rect y="15" width="90" height="30" fill="#BB0000"/>
-    <rect y="22" width="90" height="16" fill="#000"/>
-    <rect y="24" width="90" height="12" fill="#fff"/>
-    <rect y="26" width="90" height="8" fill="#000"/>
-    <ellipse cx="45" cy="30" rx="10" ry="14" fill="#BB0000" stroke="#fff" strokeWidth="1.5"/>
-    <line x1="45" y1="16" x2="45" y2="44" stroke="#fff" strokeWidth="2"/>
-  </svg>
+const KenyaFlag = ({ size = 32 }) => (
+  <img
+    src="https://flagcdn.com/ke.svg"
+    width={size}
+    height={Math.round(size * 0.67)}
+    alt="Kenya flag"
+    style={{ borderRadius: 3, boxShadow: "0 1px 4px #0004", flexShrink: 0, objectFit: "cover" }}
+  />
 );
 
 const BG = () => (
